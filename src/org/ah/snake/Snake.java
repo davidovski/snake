@@ -4,9 +4,6 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Point;
 import java.awt.Toolkit;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.geom.RoundRectangle2D;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -20,20 +17,17 @@ import org.jnativehook.keyboard.NativeKeyListener;
 public class Snake implements NativeKeyListener {
     private Color bgColor;
     private int tileSize;
-    private JFrame player;
-    private int dx;
-    private int dy;
+    private Player player;
 
-    private int gameWidth = 16;
+    private int gameWidth = 8;
 
     public Snake() {
         bgColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         tileSize = (int) (dim.getHeight() / gameWidth);
         System.out.println(tileSize);
-        player = createObject(2, 2, Color.GREEN);
-        dx = 1;
-        dy = 0;
+        player = new Player(this);
+
     }
 
     public JFrame createObject(int x, int y, Color c) {
@@ -54,15 +48,17 @@ public class Snake implements NativeKeyListener {
         f.setSize(tileSize, tileSize);
         f.add(p);
 
-        f.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                f.setShape(new RoundRectangle2D.Double(0, 0, f.getWidth(), f.getHeight(), 2, 2));
-
-            }
-        });
+//        f.addComponentListener(new ComponentAdapter() {
+//            @Override
+//            public void componentResized(ComponentEvent e) {
+//                f.setShape(new RoundRectangle2D.Double(0, 0, f.getWidth(), f.getHeight(), 2, 2));
+//
+//            }
+//        });
         f.setLocation(x * tileSize, x * tileSize);
         f.getContentPane().setBackground(c);
+        f.pack();
+        f.setVisible(true);
         return f;
     }
 
@@ -76,14 +72,30 @@ public class Snake implements NativeKeyListener {
         f.setLocation(nx, ny);
     }
 
+
+    public void fixPosition(JFrame f) {
+        f.setLocation(new Point(Math.round(f.getLocationOnScreen().x / tileSize) * tileSize, Math.round(f.getLocationOnScreen().y / tileSize) * tileSize));
+    }
+
+    public void fixPosition(Point p) {
+        p.setLocation(new Point(Math.round(p.x / tileSize) * tileSize, Math.round(p.y / tileSize) * tileSize));
+    }
+    public void setObjectPosition(JFrame f, int x, int y) {
+        Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+
+        int nx = (int) (( (x * tileSize)) % dim.getWidth());
+        int ny = (int) (( (y * tileSize)) % dim.getHeight());
+        nx = Math.round(nx / tileSize) * tileSize;
+        ny = Math.round(ny / tileSize) * tileSize;
+        f.setLocation(nx, ny);
+    }
+
     public Point getPosition(JFrame f) {
         return new Point(Math.round(f.getLocationOnScreen().x / tileSize), Math.round(f.getLocationOnScreen().y / tileSize));
     }
 
     public void updateGame() {
-        moveObject(player, dx, dy);
-        System.out.println(dx + " / " + dy);
-
+        player.update();
     }
 
     public void start() throws InterruptedException {
@@ -97,13 +109,11 @@ public class Snake implements NativeKeyListener {
             System.err.println("There was a problem registering the native hook.");
             System.err.println(ex.getMessage());
 
-            System.exit(1);
         }
         GlobalScreen.addNativeKeyListener(this);
 
-        player.pack();
-        player.setVisible(true);
 
+        player.start();
         Thread loop = new Thread(new Runnable() {
             public void run() {
                 while (true) {
@@ -121,20 +131,20 @@ public class Snake implements NativeKeyListener {
 
     public void nativeKeyPressed(NativeKeyEvent event) {
         if (NativeKeyEvent.getKeyText(event.getKeyCode()).equals("A")) {
-            dx = -1;
-            dy = 0;
+            player.setDx(-1);
+            player.setDy(0);
         }
         if (NativeKeyEvent.getKeyText(event.getKeyCode()).equals("D")) {
-            dx = 1;
-            dy = 0;
+            player.setDx(1);
+            player.setDy(0);
         }
         if (NativeKeyEvent.getKeyText(event.getKeyCode()).equals("S")) {
-            dx = 0;
-            dy = 1;
+            player.setDx(0);
+            player.setDy(1);
         }
         if (NativeKeyEvent.getKeyText(event.getKeyCode()).equals("W")) {
-            dx = 0;
-            dy = -1;
+            player.setDx(0);
+            player.setDy(-1);
         }
     }
 
