@@ -10,7 +10,7 @@ import java.util.Map.Entry;
 
 import javax.swing.JFrame;
 
-public class Player  {
+public class Player {
     private Snake game;
     private JFrame headFrame;
 
@@ -20,42 +20,27 @@ public class Player  {
 
     private int dx = 0;
     private int dy = 0;
+
     public Player(Snake game) {
         this.game = game;
         headFrame = game.createObject(4, 2, Color.GREEN);
-        lastPos = new Point(4, 2);
+        lastPos = new Point(3, 2);
         dx = 1;
         dy = 0;
 
         body = new LinkedHashMap<JFrame, Point>();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
-        addBody();
+
+        headFrame.setFocusable(true);
+        headFrame.requestFocus();
+        game.moveObject(headFrame, 0, 1);
 
     }
 
     public void addBody() {
-        List<Entry<JFrame, Point>> entryList =
-                new ArrayList<Map.Entry<JFrame, Point>>(body.entrySet());
+        List<Entry<JFrame, Point>> entryList = new ArrayList<Map.Entry<JFrame, Point>>(body.entrySet());
         Entry<JFrame, Point> lastEntry = null;
         try {
-        lastEntry = entryList.get(entryList.size()-1);
+            lastEntry = entryList.get(entryList.size() - 1);
         } catch (Exception e) {
 
         }
@@ -72,17 +57,29 @@ public class Player  {
     public void start() {
     }
 
-    public void update() {
-        lastPos = game.getPosition(headFrame);
-        game.moveObject(headFrame, dx, dy);
-        Point toset = lastPos;
-        for (Entry<JFrame, Point> entry : body.entrySet()) {
-            entry.setValue(game.getPosition(entry.getKey()));
-            game.setObjectPosition(entry.getKey(), toset.x, toset.y);
-            toset = entry.getValue();
+    public void update(boolean movetick) {
+
+        if (movetick) {
+            lastPos = game.getPosition(headFrame);
+            game.moveObject(headFrame, dx, dy);
+            Point toset = lastPos;
+            for (Entry<JFrame, Point> entry : body.entrySet()) {
+
+                entry.setValue(game.getPosition(entry.getKey()));
+                game.setObjectPosition(entry.getKey(), toset.x, toset.y);
+                toset = entry.getValue();
+
+            }
         }
+        for (Entry<JFrame, Point> entry : body.entrySet()) {
 
+            Point position = game.getPosition(entry.getKey());
+            Point position2 = game.getPosition(headFrame);
 
+            if (position.x == position2.x && position.y == position2.y) {
+                System.exit(0);
+            }
+        }
 
     }
 
@@ -91,8 +88,10 @@ public class Player  {
     }
 
     public void setDy(int dy) {
+        if (this.dy != -dy) {
 
-        this.dy = dy;
+            this.dy = dy;
+        }
     }
 
     public int getDx() {
@@ -100,6 +99,16 @@ public class Player  {
     }
 
     public void setDx(int dx) {
-        this.dx = dx;
+        if (this.dx != -dx) {
+            this.dx = dx;
+        }
+    }
+
+    public JFrame getHeadFrame() {
+        return headFrame;
+    }
+
+    public void setHeadFrame(JFrame headFrame) {
+        this.headFrame = headFrame;
     }
 }
