@@ -7,6 +7,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 
 import javax.swing.JFrame;
 
@@ -17,9 +18,13 @@ public class Player {
     private Map<JFrame, Point> body;
 
     private Point lastPos;
+    private Random random = new Random();
 
     private int dx = 0;
     private int dy = 0;
+    private boolean died;
+    private long a = 0;
+    private long speed = 1;
 
     public Player(Snake game) {
         this.game = game;
@@ -57,30 +62,60 @@ public class Player {
     public void start() {
     }
 
-    public void update(boolean movetick) {
+    public void update() {
+        a++;
 
-        if (movetick) {
-            lastPos = game.getPosition(headFrame);
-            game.moveObject(headFrame, dx, dy);
-            Point toset = lastPos;
+        if (died) {
+
+        } else {
+
+            if (a > 10 / speed) {
+
+                a = 0;
+                lastPos = game.getPosition(headFrame);
+                Point p = game.moveObject(headFrame, dx, dy);
+                Point toset = lastPos;
+                for (Entry<JFrame, Point> entry : body.entrySet()) {
+
+                    entry.setValue(game.getPosition(entry.getKey()));
+                    game.setObjectPosition(entry.getKey(), toset.x, toset.y);
+                    toset = entry.getValue();
+
+                }
+                Point ap = game.getPosition(game.getApple());
+                Point pp = game.getPosition(headFrame);
+                if (p.x == ap.x && p.y == ap.y) {
+                    AudioController.play("snare.wav");
+                } else {
+                    AudioController.play("drum.wav");
+                }
+                if (pp.x == ap.x && pp.y == ap.y) {
+                    addBody();
+                    speed += 0.1;
+                    a = 100;
+                    game.setObjectPosition(game.getApple(), random.nextInt(game.getGameWidth()), random.nextInt(game.getGameHeight()));
+                }
+
+            }
             for (Entry<JFrame, Point> entry : body.entrySet()) {
 
-                entry.setValue(game.getPosition(entry.getKey()));
-                game.setObjectPosition(entry.getKey(), toset.x, toset.y);
-                toset = entry.getValue();
+                Point position = game.getPosition(entry.getKey());
+                Point position2 = game.getPosition(headFrame);
 
+                if (position.x == position2.x && position.y == position2.y) {
+                    died = true;
+                    for (Entry<JFrame, Point> entry1 : body.entrySet()) {
+                        JFrame key = entry1.getKey();
+                        key.getContentPane().setBackground(Color.RED);
+
+                        key.repaint();
+                        System.out.println("c");
+                    }
+                    headFrame.getContentPane().setBackground(Color.RED.brighter());
+                    headFrame.getContentPane().repaint();
+                }
             }
         }
-        for (Entry<JFrame, Point> entry : body.entrySet()) {
-
-            Point position = game.getPosition(entry.getKey());
-            Point position2 = game.getPosition(headFrame);
-
-            if (position.x == position2.x && position.y == position2.y) {
-                System.exit(0);
-            }
-        }
-
     }
 
     public int getDy() {

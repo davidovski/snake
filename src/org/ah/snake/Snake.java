@@ -35,7 +35,7 @@ public class Snake implements KeyListener {
 
         gameWidth = (int) Math.round(dim.getWidth() / tileSize);
 
-        apple = createObject(gameWidth / 2, gameHeight / 2, Color.RED);
+        apple = createObject(7, 2, Color.RED);
 
     }
 
@@ -53,7 +53,7 @@ public class Snake implements KeyListener {
         p.setMinimumSize(d);
 
         f.setUndecorated(true);
-        f.setBackground(c);
+//        f.setBackground(c);
         f.setSize(tileSize, tileSize);
         f.add(p);
 
@@ -79,9 +79,11 @@ public class Snake implements KeyListener {
         p.setLocation(new Point(Math.round(p.x / tileSize) * tileSize, Math.round(p.y / tileSize) * tileSize));
     }
 
-    public void moveObject(JFrame f, int x, int y) {
+    public Point moveObject(JFrame f, int x, int y) {
         Point position = getPosition(f);
-        setObjectPosition(f, position.x + x, position.y + y);
+        position.translate(x, y);
+        setObjectPosition(f, position.x, position.y);
+        return position;
     }
 
     public void setObjectPosition(JFrame f, int x, int y) {
@@ -110,14 +112,9 @@ public class Snake implements KeyListener {
 
     public void updateGame() {
         a++;
-        player.update(a % 4 == 0);
         player.getHeadFrame().requestFocus();
-        Point pp = getPosition(player.getHeadFrame());
-        Point ap = getPosition(apple);
-        if (pp.x == ap.x && pp.y == ap.y) {
-            player.addBody();
-            setObjectPosition(apple, random.nextInt(gameWidth), random.nextInt(gameHeight));
-        }
+
+        player.update();
 
     }
 
@@ -139,7 +136,7 @@ public class Snake implements KeyListener {
                 while (true) {
                     updateGame();
                     try {
-                        Thread.sleep(100);
+                        Thread.sleep(50);
                     } catch (InterruptedException e) {
                     }
                 }
@@ -182,5 +179,29 @@ public class Snake implements KeyListener {
     public void keyReleased(KeyEvent e) {
         // TODO Auto-generated method stub
 
+    }
+
+    public JFrame getApple() {
+        return apple;
+    }
+
+    public void setApple(JFrame apple) {
+        this.apple = apple;
+    }
+
+    public int getGameWidth() {
+        return gameWidth;
+    }
+
+    public void setGameWidth(int gameWidth) {
+        this.gameWidth = gameWidth;
+    }
+
+    public int getGameHeight() {
+        return gameHeight;
+    }
+
+    public void setGameHeight(int gameHeight) {
+        this.gameHeight = gameHeight;
     }
 }
