@@ -3,6 +3,7 @@ package org.ah.snake;
 import java.awt.Color;
 import java.awt.Point;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -24,9 +25,12 @@ public class Player {
     private int dy = 0;
     private boolean died;
     private long a = 0;
-    private long speed = 1;
+    private long speed = 2;
+    private int tail = 0;
 
-    public Player(Snake game) {
+
+    public Player(Snake game, float startSpeed) {
+        speed = (long) startSpeed;
         this.game = game;
         headFrame = game.createObject(4, 2, Color.GREEN);
         lastPos = new Point(3, 2);
@@ -55,14 +59,16 @@ public class Player {
         } else {
             k = lastPos;
         }
-        body.put(game.createObject(k.x, k.y, Color.GREEN.darker()), new Point(k.x, k.y));
+        Color darker = new Color(0, (int) ((Math.cos(tail / 4d) + 1d) * 127d), 0);
+        tail++;
+        body.put(game.createObject(k.x, k.y, darker), new Point(k.x, k.y));
 
     }
 
     public void start() {
     }
 
-    public void update() {
+    public void update(float speedincr) {
         a++;
 
         if (died) {
@@ -91,7 +97,7 @@ public class Player {
                 }
                 if (pp.x == ap.x && pp.y == ap.y) {
                     addBody();
-                    speed += 0.1;
+                    speed += speedincr;
                     a = 100;
                     game.setObjectPosition(game.getApple(), random.nextInt(game.getGameWidth()), random.nextInt(game.getGameHeight()));
                 }
@@ -104,18 +110,23 @@ public class Player {
 
                 if (position.x == position2.x && position.y == position2.y) {
                     died = true;
-                    for (Entry<JFrame, Point> entry1 : body.entrySet()) {
-                        JFrame key = entry1.getKey();
-                        key.getContentPane().setBackground(Color.RED);
-
-                        key.repaint();
-                        System.out.println("c");
-                    }
-                    headFrame.getContentPane().setBackground(Color.RED.brighter());
-                    headFrame.getContentPane().repaint();
+                    game.destroy();
                 }
             }
         }
+    }
+
+    public void destroy() {
+        Iterator<Entry<JFrame, Point>> it = body.entrySet().iterator();
+        while (it.hasNext()) {
+            Entry<JFrame, Point> next = it.next();
+            next.getKey().setVisible(false);
+            next.getKey().dispose();
+            it.remove();
+        }
+
+        headFrame.setVisible(false);
+        headFrame.dispose();
     }
 
     public int getDy() {

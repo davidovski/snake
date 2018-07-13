@@ -25,17 +25,19 @@ public class Snake implements KeyListener {
     private JFrame apple;
 
     private Random random = new Random();
+    private float speedincrease;
+    private Loop loop;
 
-    public Snake() {
+    public Snake(int height, float speedincrease) {
+        gameHeight = height;
+        this.speedincrease = speedincrease;
         bgColor = new Color(1.0f, 1.0f, 1.0f, 0.5f);
         Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
         tileSize = (int) (dim.getHeight() / gameHeight);
         System.out.println(tileSize);
-        player = new Player(this);
 
         gameWidth = (int) Math.round(dim.getWidth() / tileSize);
 
-        apple = createObject(7, 2, Color.RED);
 
     }
 
@@ -54,6 +56,7 @@ public class Snake implements KeyListener {
 
         f.setUndecorated(true);
 //        f.setBackground(c);
+
         f.setSize(tileSize, tileSize);
         f.add(p);
 
@@ -69,6 +72,13 @@ public class Snake implements KeyListener {
         f.pack();
         f.setVisible(true);
         return f;
+    }
+    public void destroy() {
+        loop.terminate();
+        player.destroy();
+        apple.setVisible(false);
+        apple.dispose();
+
     }
 
     public void fixPosition(JFrame f) {
@@ -114,11 +124,13 @@ public class Snake implements KeyListener {
         a++;
         player.getHeadFrame().requestFocus();
 
-        player.update();
+        player.update(speedincrease);
 
     }
 
-    public void start() throws InterruptedException {
+    public void start(float speed) throws InterruptedException {
+        player = new Player(this, speed);
+        apple = createObject(7, 2, Color.RED);
 
         // try {
         // GlobalScreen.registerNativeHook();
@@ -131,20 +143,27 @@ public class Snake implements KeyListener {
 
         player.start();
         player.getHeadFrame().addKeyListener(this);
-        Thread loop = new Thread(new Runnable() {
-            public void run() {
-                while (true) {
-                    updateGame();
-                    try {
-                        Thread.sleep(50);
-                    } catch (InterruptedException e) {
-                    }
-                }
-            }
-        });
-        loop.start();
+        loop = new Loop();
+        (new Thread(loop)).start();
 
     }
+    private class Loop implements Runnable {
+        private boolean running = true;
+        public void run() {
+            while (running) {
+                updateGame();
+                try {
+                    Thread.sleep(50);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+        public void terminate() {
+            running = false;
+        }
+
+    }
+
 
     public void keyTyped(KeyEvent e) {
         // TODO Auto-generated method stub
